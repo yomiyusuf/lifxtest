@@ -8,17 +8,19 @@ import kotlinx.android.synthetic.main.activity_main.*
 import android.os.AsyncTask
 import android.view.LayoutInflater
 import android.view.View
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager.VERTICAL
+import com.squareup.picasso.Picasso
 import org.json.JSONObject
 
 
 class MainActivity : AppCompatActivity() {
 
     lateinit var adapter: ListAdapter
-    val listData = mutableListOf<String>()
+    val listData = mutableListOf<ListItem>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,7 +37,7 @@ class MainActivity : AppCompatActivity() {
         list.addItemDecoration(dividerItemDecoration)
     }
 
-    class ListAdapter(private val listData: List<String>): RecyclerView.Adapter<ListAdapter.ViewHolder>() {
+    class ListAdapter(private val listData: List<ListItem>): RecyclerView.Adapter<ListAdapter.ViewHolder>() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
             return ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.recyclerview_row, parent, false))
@@ -44,11 +46,16 @@ class MainActivity : AppCompatActivity() {
         override fun getItemCount(): Int = listData.size
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            holder.blah.text = listData[position]
+            val item = listData[position]
+            holder.blah.text = item.title
+            Picasso.get()
+                .load(item.imageUrl)
+                .into(holder.image)
         }
 
         inner class ViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
             val blah: TextView = itemView.findViewById(R.id.textView)
+            val image: ImageView = itemView.findViewById(R.id.imageView)
         }
 
     }
@@ -63,7 +70,8 @@ class MainActivity : AppCompatActivity() {
 
                 for (i in 0 until (results?.length() ?: 0)) {
                     val result = results?.get(i) as JSONObject
-                    listData.add(result.getString("title"))
+
+                    listData.add(ListItem(result.getString("title"), result.getString("image_url")))
                 }
                 adapter.notifyDataSetChanged()
             }
